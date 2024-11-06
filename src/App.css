@@ -1,0 +1,107 @@
+.game {
+    display: flex;
+    padding: 2rem 0;
+    flex-direction: column;
+    gap: 20px;
+    font-weight: 500;
+    margin: 0 auto;
+    width: 800px;
+    height: 100vh;
+}
+
+.group {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+label {
+    max-width: 200px;
+}
+
+.button-group {
+    display: flex;
+    gap: 10px;
+}
+
+button {
+    padding: 5px 10px;
+    border: 1px solid black;
+    width: 10rem;
+    background-color: #cccccc3b;
+    transition: background-color 0.3s;
+}
+
+button:hover {
+    background-color: #aaaaaa70;
+    border-color: black;
+}
+
+.frame {
+    width: 100%;
+    border: 2px solid black;
+    height: 40rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+}
+
+.number-container {
+    position: absolute;
+    width: 5rem;
+    height: 5rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border: 2px solid red;
+    background-color: white;
+    border-radius: 50%;
+    transition: background-color 0.3s ease;
+    cursor: pointer;
+    color: black;
+    z-index: 1;
+}
+
+.number-container.clicked {
+    background-color: #ff00009e;
+}
+
+.number-container.fade-out {
+    opacity: 0;
+    transition: opacity 3s ease;
+}
+
+.number-outer {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.number-inner {
+    font-size: 24px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+}
+
+.countdown {
+    font-weight: 300;
+    font-size: 1rem;
+    margin-top: 5px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+    color: white;
+}
