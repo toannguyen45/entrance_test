@@ -216,7 +216,7 @@ const App: React.FC = () => {
         <button onClick={handlePlay}>{hasStarted ? 'Restart' : 'Play'}</button>
         {showAutoPlayButton && (
           <button onClick={toggleAutoPlay}>
-            {autoPlay ? 'Auto Play: OFF' : 'Auto Play: ON'}
+            {autoPlay ? 'Auto Play OFF' : 'Auto Play ON'}
           </button>
         )}
       </div>
