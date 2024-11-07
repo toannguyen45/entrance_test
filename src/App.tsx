@@ -240,7 +240,7 @@ const App: React.FC = () => {
           </div>
         ))}
       </div>
-      {!gameOver && (
+      {!gameOver && hasStarted && (
         <div className="next-number">
           <p>Next: {currentNumber}</p>
         </div>
