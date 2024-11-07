@@ -106,7 +106,7 @@ const App: React.FC = () => {
     }, 500);
   }, [handleNumberClick, currentNumber]);
 
-  const handlePlay = useCallback(() => {
+  const handlePlay = () => {
     if (timerRef.current) clearInterval(timerRef.current);
     if (autoPlayRef.current) clearInterval(autoPlayRef.current);
     initializeGame();
@@ -116,11 +116,11 @@ const App: React.FC = () => {
     if (autoPlay) {
       startAutoPlay();
     }
-  }, [initializeGame, autoPlay, startAutoPlay]);
+  };
 
-  const toggleAutoPlay = useCallback(() => {
+  const toggleAutoPlay = () => {
     setAutoPlay((prev) => !prev);
-  }, []);
+  };
 
   useEffect(() => {
     if (autoPlay && isPlaying && !gameOver) {
