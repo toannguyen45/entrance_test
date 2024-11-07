@@ -12,65 +12,55 @@ interface NumberType {
 }
 
 const App: React.FC = () => {
-  const [points, setPoints] = useState<number>(5);
+  const pointsRef = useRef<HTMLInputElement>(null);
   const [numbers, setNumbers] = useState<NumberType[]>([]);
-  const [clickedOrder, setClickedOrder] = useState<number[]>([]);
   const [isPlaying, setIsPlaying] = useState<boolean>(false);
   const [hasStarted, setHasStarted] = useState<boolean>(false);
   const [timer, setTimer] = useState<number>(0);
   const [message, setMessage] = useState<string>("LET'S PLAY");
   const [autoPlay, setAutoPlay] = useState<boolean>(false);
-  const timerRef = useRef(null);
-  const autoPlayRef = useRef(null);
+  const timerRef = useRef<number | null>(null);
+  const autoPlayRef = useRef<number | null>(null);
   const [gameOver, setGameOver] = useState<boolean>(false);
-  const [nextNumber, setNextNumber] = useState<number>(1);
-  const [showNextNumber, setShowNextNumber] = useState<boolean>(false);
+  const [currentNumber, setCurrentNumber] = useState<number>(1);
   const [showAutoPlayButton, setShowAutoPlayButton] = useState<boolean>(false);
 
+  const getPoints = () => Number(pointsRef.current?.value) || 5;
+
   const initializeGame = useCallback(() => {
-    const numberSize = 5; // This matches the width/height in rem for `.number-container`
-    const frameHeight = 40 * 16; // Convert 40rem to pixels for easier calculation
-    const frameWidth = 100 * 16; // Convert 100% of 800px width to pixels
+    const NUMBER_BOX_SIZE = 5;
+    const FRAME_HEIGHT = 40 * 16;
+    const FRAME_WIDTH = 100 * 16;
+    const points = getPoints();
     const generatedNumbers: NumberType[] = Array.from({ length: points }, (_, i) => ({
       value: i + 1,
-      top: `${Math.random() * (frameHeight - numberSize * 16) / frameHeight * 100}%`,
-      left: `${Math.random() * (frameWidth - numberSize * 16) / frameWidth * 100}%`,
+      top: `${Math.random() * (FRAME_HEIGHT - NUMBER_BOX_SIZE * 16) / FRAME_HEIGHT * 100}%`,
+      left: `${Math.random() * (FRAME_WIDTH - NUMBER_BOX_SIZE * 16) / FRAME_WIDTH * 100}%`,
       countdown: 3.0,
       clicked: false,
       fadeOut: false,
       isGameOver: false,
     }));
     setNumbers(generatedNumbers);
-    setClickedOrder([]);
     setTimer(0);
     setIsPlaying(true);
     setMessage("LET'S PLAY");
-    setNextNumber(1);
-    setShowNextNumber(true);
+    setCurrentNumber(1);
     setGameOver(false);
     setShowAutoPlayButton(true);
-  }, [points]);
+  }, []);
 
-  const handlePlay = useCallback(() => {
+  const handleGameOver = useCallback((msg: string) => {
+    setGameOver(true);
+    setIsPlaying(false);
     if (timerRef.current) clearInterval(timerRef.current);
     if (autoPlayRef.current) clearInterval(autoPlayRef.current);
-    initializeGame();
-    setHasStarted(true);
-    timerRef.current = setInterval(() => setTimer((prev) => prev + 0.1), 100);
-
-    if (autoPlay) {
-      startAutoPlay();
-    }
-  }, [initializeGame, autoPlay]);
+    setMessage(msg);
+    setShowAutoPlayButton(false);
+  }, []);
 
   const handleNumberClick = useCallback((value: number) => {
-    if (value === points) {
-      setShowNextNumber(false);
-    } else {
-      setNextNumber(value + 1);
-    }
-    if (value === clickedOrder.length + 1) {
-      setClickedOrder((prev) => [...prev, value]);
+    if (value === currentNumber) {
       setNumbers((prev) =>
         prev.map((num) =>
           num.value === value
@@ -78,6 +68,8 @@ const App: React.FC = () => {
             : num
         )
       );
+
+      setCurrentNumber((prev) => prev + 1);
 
       const countdownInterval = setInterval(() => {
         setNumbers((prev) =>
@@ -100,27 +92,31 @@ const App: React.FC = () => {
       );
       handleGameOver('GAME OVER');
     }
-  }, [clickedOrder.length, points]);
-
-  const handleGameOver = useCallback((msg: string) => {
-    setShowNextNumber(false);
-    setGameOver(true);
-    setIsPlaying(false);
-    if (timerRef.current) clearInterval(timerRef.current);
-    if (autoPlayRef.current) clearInterval(autoPlayRef.current);
-    setMessage(msg);
-    setShowAutoPlayButton(false);
-  }, []);
+  }, [currentNumber, handleGameOver]);
 
   const startAutoPlay = useCallback(() => {
+    const points = getPoints();
+
     autoPlayRef.current = setInterval(() => {
-      if (clickedOrder.length < points) {
-        handleNumberClick(clickedOrder.length + 1);
+      if (currentNumber <= points) {
+        handleNumberClick(currentNumber);
       } else {
         if (autoPlayRef.current) clearInterval(autoPlayRef.current);
       }
     }, 500);
-  }, [handleNumberClick, clickedOrder, points]);
+  }, [handleNumberClick, currentNumber]);
+
+  const handlePlay = useCallback(() => {
+    if (timerRef.current) clearInterval(timerRef.current);
+    if (autoPlayRef.current) clearInterval(autoPlayRef.current);
+    initializeGame();
+    setHasStarted(true);
+    timerRef.current = setInterval(() => setTimer((prev) => prev + 0.1), 100);
+
+    if (autoPlay) {
+      startAutoPlay();
+    }
+  }, [initializeGame, autoPlay, startAutoPlay]);
 
   const toggleAutoPlay = useCallback(() => {
     setAutoPlay((prev) => !prev);
@@ -130,9 +126,9 @@ const App: React.FC = () => {
     if (autoPlay && isPlaying && !gameOver) {
       startAutoPlay();
     } else {
-      clearInterval(autoPlayRef.current);
+      clearInterval(autoPlayRef.current as unknown as number);
     }
-    return () => clearInterval(autoPlayRef.current);
+    return () => clearInterval(autoPlayRef.current as unknown as number);
   }, [autoPlay, isPlaying, gameOver, startAutoPlay]);
 
   useEffect(() => {
@@ -157,25 +153,31 @@ const App: React.FC = () => {
   }, [numbers, gameOver]);
 
   useEffect(() => {
-    const fadeOutTimeout = setTimeout(() => {
-      setNumbers((prevNumbers) => prevNumbers.filter((num) => !num.fadeOut));
-    }, 1000);
+    const fadeOutCount = numbers.filter(num => num.fadeOut).length;
 
-    return () => clearTimeout(fadeOutTimeout);
-  }, [numbers.filter(num => num.fadeOut).length]);
+    if (fadeOutCount > 0) {
+      const fadeOutTimeout = setTimeout(() => {
+        setNumbers((prevNumbers) => prevNumbers.filter((num) => !num.fadeOut));
+      }, 1000);
+
+      return () => clearTimeout(fadeOutTimeout);
+    }
+  }, [numbers]);
 
   useEffect(() => {
-    if (isPlaying && points > 0 && clickedOrder.length === points) {
+    const points = getPoints();
+
+    if (isPlaying && points > 0 && currentNumber > points) {
       setTimeout(() => {
         handleGameOver('ALL CLEARED');
       }, 500);
     }
-  }, [clickedOrder, points, isPlaying]);
+  }, [currentNumber, handleGameOver, isPlaying]);
 
   useEffect(() => {
     return () => {
-      clearInterval(timerRef.current);
-      clearInterval(autoPlayRef.current);
+      clearInterval(timerRef.current as unknown as number);
+      clearInterval(autoPlayRef.current as unknown as number);
     };
   }, []);
 
@@ -199,11 +201,8 @@ const App: React.FC = () => {
           <input
             type="text"
             min="1"
-            value={points || ""}
-            onChange={(e) => {
-              const value = e.target.value;
-              setPoints(value === "" ? "" : Number(value));
-            }}
+            ref={pointsRef}
+            defaultValue="5"
             disabled={isPlaying}
           />
         </div>
@@ -226,7 +225,7 @@ const App: React.FC = () => {
             key={value}
             onClick={() => isPlaying && handleNumberClick(value)}
             className={`number-container ${clicked ? 'clicked' : ''} ${fadeOut ? 'fade-out' : ''}`}
-            style={{ top, left, zIndex: points - value }}
+            style={{ top, left, zIndex: getPoints() - value }}
           >
             <div className="number-outer">
               <div className="number-inner">
@@ -241,9 +240,9 @@ const App: React.FC = () => {
           </div>
         ))}
       </div>
-      {showNextNumber && !gameOver && (
+      {!gameOver && (
         <div className="next-number">
-          <p>Next: {nextNumber}</p>
+          <p>Next: {currentNumber}</p>
         </div>
       )}
     </div>
