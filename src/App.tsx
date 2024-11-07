@@ -28,10 +28,13 @@ const App: React.FC = () => {
   const [showAutoPlayButton, setShowAutoPlayButton] = useState<boolean>(false);
 
   const initializeGame = useCallback(() => {
+    const numberSize = 5; // This matches the width/height in rem for `.number-container`
+    const frameHeight = 40 * 16; // Convert 40rem to pixels for easier calculation
+    const frameWidth = 100 * 16; // Convert 100% of 800px width to pixels
     const generatedNumbers: NumberType[] = Array.from({ length: points }, (_, i) => ({
       value: i + 1,
-      top: `${Math.random() * 80}%`,
-      left: `${Math.random() * 80}%`,
+      top: `${Math.random() * (frameHeight - numberSize * 16) / frameHeight * 100}%`,
+      left: `${Math.random() * (frameWidth - numberSize * 16) / frameWidth * 100}%`,
       countdown: 3.0,
       clicked: false,
       fadeOut: false,
