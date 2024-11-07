@@ -165,16 +165,6 @@ const App: React.FC = () => {
   }, [numbers]);
 
   useEffect(() => {
-    const points = getPoints();
-
-    if (isPlaying && points > 0 && currentNumber > points) {
-      setTimeout(() => {
-        handleGameOver('ALL CLEARED');
-      }, 500);
-    }
-  }, [currentNumber, handleGameOver, isPlaying]);
-
-  useEffect(() => {
     return () => {
       clearInterval(timerRef.current as unknown as number);
       clearInterval(autoPlayRef.current as unknown as number);
@@ -191,6 +181,18 @@ const App: React.FC = () => {
         return { color: 'black' };
     }
   }, [message]);
+
+  useEffect(() => {
+    const allNumbersClicked = numbers.every((num) => num.clicked);
+    const allNumbersFadedOut = numbers.every((num) => num.fadeOut);
+
+    if (isPlaying && allNumbersClicked && allNumbersFadedOut) {
+      setTimeout(() => {
+        handleGameOver('ALL CLEARED');
+      }, 2000);
+    }
+  }, [numbers, isPlaying, handleGameOver]);
+
 
   return (
     <div className='game'>
