@@ -59,40 +59,51 @@ const App: React.FC = () => {
     setShowAutoPlayButton(false);
   }, []);
 
-  const handleNumberClick = useCallback((value: number) => {
-    if (value === currentNumber) {
-      setNumbers((prev) =>
-        prev.map((num) =>
-          num.value === value
-            ? { ...num, clicked: true, countdown: 3.0, fadeOut: true }
-            : num
-        )
-      );
+  const handleNumberClick = useCallback(
+    (value: number) => {
+      const points = getPoints();
 
-      setCurrentNumber((prev) => prev + 1);
-
-      const countdownInterval = setInterval(() => {
+      if (value === currentNumber) {
         setNumbers((prev) =>
           prev.map((num) =>
-            num.value === value && num.countdown > 0
-              ? { ...num, countdown: parseFloat((num.countdown - 0.1).toFixed(1)) }
+            num.value === value
+              ? { ...num, clicked: true, countdown: 3.0, fadeOut: true }
               : num
           )
         );
-      }, 100);
 
-      setTimeout(() => clearInterval(countdownInterval), 3000);
-    } else {
-      setNumbers((prev) =>
-        prev.map((num) =>
-          num.value === value
-            ? { ...num, clicked: true, fadeOut: false, countdown: 3.0, isGameOver: true }
-            : num
-        )
-      );
-      handleGameOver('GAME OVER');
-    }
-  }, [currentNumber, handleGameOver]);
+        setCurrentNumber((prev) => {
+          if (prev < points) {
+            return prev + 1;
+          } else {
+            return prev;
+          }
+        });
+
+        const countdownInterval = setInterval(() => {
+          setNumbers((prev) =>
+            prev.map((num) =>
+              num.value === value && num.countdown > 0
+                ? { ...num, countdown: parseFloat((num.countdown - 0.1).toFixed(1)) }
+                : num
+            )
+          );
+        }, 100);
+
+        setTimeout(() => clearInterval(countdownInterval), 3000);
+      } else {
+        setNumbers((prev) =>
+          prev.map((num) =>
+            num.value === value
+              ? { ...num, clicked: true, fadeOut: false, countdown: 3.0, isGameOver: true }
+              : num
+          )
+        );
+        handleGameOver('GAME OVER');
+      }
+    },
+    [currentNumber, handleGameOver]
+  );
 
   const startAutoPlay = useCallback(() => {
     const points = getPoints();
